@@ -1,0 +1,27 @@
+# Bỏ qua tất cả mọi thứ trong thư mục này
+*
+
+# Nhượng bộ các thư mục (để Git có thể chui vào tìm file)
+!*/
+
+# NHƯNG GIỮ LẠI (KHÔNG BỎ QUA) CÁC FILE CHỈ ĐỊNH SAU ĐÂY:
+!docling.ipynb
+!tab_llm_worker.py
+!tab_db_worker.py
+!bgem3_siglip2.ipynb
+!database_manager.py
+!bridge_module.py
+!app_ui.py
+!README.md
+!requirements.txt
+!.env.example
+!.gitignore
+
+# ==============================================================================
+# QUÉT LẠI MỘT LẦN NỮA ĐỂ CHẶN TẬN GỐC CÁC THƯ MỤC NHẠY CẢM
+# ==============================================================================
+qdrant_db_local/
+scratch/
+__pycache__/
+key_api/
+.git/
