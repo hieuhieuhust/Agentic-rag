@@ -107,7 +107,6 @@ File `bgem3_siglip2.ipynb` (hay còn gọi là file embedding) thì cứ thế c
 - Truy vấn chuỗi (Multi-turn): Hỏi chính xác số lượng bảng biểu, số lượng hình ảnh xuất hiện trong một trang chỉ định.
 - Sau khi AI định vị và báo cáo số lượng, tiếp tục truy vấn xoáy sâu vào nội dung chi tiết nằm bên trong chính những bức ảnh/bảng biểu đó (AI vẫn giữ được Context và trả lời xuất sắc).
 
----
 
-## 5. Khuyến cáo Bảo mật
-Vui lòng cấu hình tệp `.gitignore` để loại trừ các tệp chứa thông tin xác thực (`serviceAccountKey.json`), các tệp dữ liệu tạm kích thước lớn (`*.pdf`, `*.json`) và bộ nhớ đệm hệ thống trước khi tải mã nguồn lên các kho lưu trữ công cộng.
+
+
