@@ -1,6 +1,6 @@
 # Hệ thống Truy vấn Đa phương thức Agentic RAG (Microservices)
 
-Dự án này là hệ thống Hỏi-Đáp đa phương thức Agentic RAG, được thiết kế chuyên biệt theo dạng phân tán (Microservices) để giải quyết bài toán triển khai trên các thiết bị cá nhân thiếu hụt phần cứng.
+Dự án này là hệ thống Hỏi-Đáp đa phương thức Agentic RAG, được thiết kế chuyên biệt theo dạng phân tán (Microservices) để giải quyết bài toán triển khai trên các thiết bị cá nhân thiếu hụt phần cứng. **KHÔNG embedding bằng API openAI**, **Chỉ dùng API openAI để viết lại câu hỏi và tóm tắt ý chính** để giảm thiểu chi phí, **có thể thay thế API openAI = model tự train (nếu đủ data) hoặc model local trên huggingface**.
 
 Cụ thể, kiến trúc hệ thống được chia nhỏ và phân bổ linh hoạt như sau:
 - **Xử lý Dữ liệu (Nặng GPU):** Các tác vụ bóc tách tài liệu dùng docling và nhúng Vector (Embedding) được đẩy lên nhiều tab Google Colab để "mượn" phần cứng xử lý tốc độ cao.
