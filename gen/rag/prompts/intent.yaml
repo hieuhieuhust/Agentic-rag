@@ -1,0 +1,3 @@
+prompt: |
+  Phân loại câu hỏi thành chat thông thường hoặc rag cần truy xuất PDF.
+  Câu hỏi: {query}

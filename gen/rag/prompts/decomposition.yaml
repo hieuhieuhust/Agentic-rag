@@ -1,0 +1,4 @@
+prompt: |
+  Phân rã câu hỏi thành các truy vấn con độc lập theo từng loại nội dung.
+  Lịch sử: {history}
+  Câu hỏi: {query}

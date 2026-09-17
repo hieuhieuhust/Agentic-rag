@@ -1,0 +1,5 @@
+prompt: |
+  Trả lời câu hỏi dựa trên ngữ cảnh được cung cấp. Không bịa thông tin.
+  Lịch sử: {history}
+  Câu hỏi: {query}
+  Ngữ cảnh: {context}

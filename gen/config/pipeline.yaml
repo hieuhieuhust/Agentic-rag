@@ -1,0 +1,26 @@
+stages:
+  intent_analyzer:
+    provider: openai
+    model: gpt-4o-mini
+    prompt: rag/prompts/intent.yaml
+  query_decomposer:
+    provider: openai
+    model: gpt-4o
+    prompt: rag/prompts/decomposition.yaml
+  tool_selector:
+    provider: openai
+    model: gpt-4o
+  result_filter:
+    provider: openai
+    model: gpt-4o-mini
+    prompt: rag/prompts/filtering.yaml
+  sufficiency_checker:
+    provider: openai
+    model: gpt-4o-mini
+  query_rewriter:
+    provider: openai
+    model: gpt-4o-mini
+  answer_generator:
+    provider: openai
+    model: gpt-4o
+    prompt: rag/prompts/answering.yaml

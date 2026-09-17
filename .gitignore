@@ -16,6 +16,14 @@
 !requirements.txt
 !.env.example
 !.gitignore
+!gen/
+!gen/**
+
+# Không lưu môi trường ảo và file sinh tự động trong mã nguồn gen
+gen/venv/
+gen/**/__pycache__/
+gen/**/*.pyc
+.pytest_cache/
 
 
 # QUÉT LẠI MỘT LẦN NỮA ĐỂ CHẶN TẬN GỐC CÁC THƯ MỤC NHẠY CẢM
