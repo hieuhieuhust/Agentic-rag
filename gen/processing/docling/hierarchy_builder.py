@@ -2,6 +2,8 @@
 
 import fitz
 
+from processing.docling.heading_extractor import dominant_span_info
+
 def filter_monospace_headings(struct_merged, element_coords, pdf_path):
     """Lọc bỏ các heading có font monospace (từ 5 đoạn CODE đầu tiên + 10 font mặc định)"""
     code_fonts = set()

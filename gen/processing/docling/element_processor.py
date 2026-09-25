@@ -1,5 +1,9 @@
 """Được tách cơ học từ docling.ipynb; không thay đổi logic thuật toán."""
 
+import fitz
+
+from processing.docling.heading_extractor import base_font, dominant_span_info
+
 def convert_monospace_text_to_code(element_coords, pdf_path, mono_threshold=0.8):
     _pdf = fitz.open(pdf_path)
     code_fonts = set()

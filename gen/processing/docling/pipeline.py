@@ -240,6 +240,14 @@ def find_heading(pdf_path, doc):
     # Gán level tự động cho các khối bị sót
     assign_levels_for_missing_blocks(heading_con_sot_giua_2level)
 
+    # In kết quả level cuối cùng sau khi đã khớp bookmark và xử lý các khối bị sót.
+    print("\n===== LEVEL CUỐI CÙNG CỦA CÁC HEADING =====")
+    for position, heading in enumerate(struct_merged, start=1):
+        print(
+            f"[{position:04d}] Level {heading.get('level')} | "
+            f"Trang {heading.get('page')} | {heading.get('text', '').strip()}"
+        )
+
     # ── BÁO CÁO NHANH GỌN LẸ ────────────────────────────────────────────────
     print(f" ĐÃ XỬ LÝ XONG: Tìm thấy {len(struct_merged)} heading và lấp đầy {len(heading_con_sot_giua_2level)} khối bị sót.")
 
