@@ -15,16 +15,27 @@ class WorkerClient:
         self.headers = {"X-Worker-Token": settings.worker_token}
 
     def poll(self, supported_types: list[str]) -> dict[str, Any] | None:
-        response = httpx.post(
-            f"{self.base_url}/workers/jobs/poll",
-            headers=self.headers,
-            json={
-                "worker_id": self.worker_id,
-                "supported_types": supported_types,
-                "lease_seconds": 900,
-            },
-            timeout=30,
-        )
+        try:
+            response = httpx.post(
+                f"{self.base_url}/workers/jobs/poll",
+                headers=self.headers,
+                json={
+                    "worker_id": self.worker_id,
+                    "supported_types": supported_types,
+                    "lease_seconds": 900,
+                },
+                timeout=30,
+            )
+        except httpx.RequestError as exc:
+            print(f"Worker poll tạm mất kết nối: {exc}")
+            return None
+
+        if response.is_server_error:
+            print(
+                "Worker poll nhận lỗi tạm thời "
+                f"{response.status_code}; sẽ tự thử lại"
+            )
+            return None
         response.raise_for_status()
         return response.json()["job"]
 

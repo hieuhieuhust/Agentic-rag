@@ -10,7 +10,7 @@ from backend.database.models.mixins import utc_now
 from backend.database.models.document import Document
 from backend.database.models.processing_job import ProcessingJob
 from backend.database.repositories.job_repository import JobRepository
-from config.constants import Status
+from config.constants import MAX_JOB_ATTEMPTS, Status
 from contracts.jobs import JobClaim, JobComplete, JobFail, JobProgress
 
 
@@ -19,6 +19,10 @@ router = APIRouter(
     tags=["workers"],
     dependencies=[Depends(verify_worker_token)],
 )
+
+
+def can_retry_job(attempt_count: int, retryable: bool) -> bool:
+    return retryable and attempt_count < MAX_JOB_ATTEMPTS
 
 
 def require_owned_job(repository: JobRepository, job_id: uuid.UUID, worker_id: str):
@@ -131,6 +135,10 @@ def fail_job(
     job.error = body.error
     job.worker_id = None
     job.lease_expires_at = None
-    job.status = Status.PENDING if body.retryable else Status.ERROR
+    job.status = (
+        Status.PENDING
+        if can_retry_job(job.attempt_count, body.retryable)
+        else Status.ERROR
+    )
     session.commit()
     return {"status": job.status}
