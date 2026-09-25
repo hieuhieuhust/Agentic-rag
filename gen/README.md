@@ -75,7 +75,7 @@ gen/
 | Streamlit | máy cá nhân | giao diện đăng nhập, tải PDF và chat |
 | FastAPI | máy cá nhân | API, xác thực, phân quyền và điều phối job |
 | PostgreSQL | máy cá nhân | user, document, chat, request và trạng thái job |
-| Qdrant | máy cá nhân hoặc server truy cập được | lưu và tìm kiếm vector |
+| Qdrant | máy cá nhân hoặc server truy cập được | lưu và tìm kiếm vector; hiện dùng local embedded |
 | Docling worker | Google Colab | xử lý PDF cần GPU/RAM lớn |
 | Embedding worker | Google Colab | chạy BGE-M3 và SigLIP2 |
 | Database worker | máy cá nhân | ghi dữ liệu embedding vào Qdrant |
@@ -174,14 +174,17 @@ python -m workers.local.database_worker
 
 ## 8. Chạy worker trên Colab
 
-Hai notebook dùng cho Colab:
+Hai notebook đã dùng để kiểm thử nằm trong thư mục `../collab`:
 
-- `notebooks/docling_colab.ipynb`
-- `notebooks/embedding_colab.ipynb`
+- `../collab/docling_worker.ipynb`
+- `../collab/embedding_worker.ipynb`
 
-Colab cần truy cập được FastAPI qua URL HTTPS công khai trong thời gian demo.
-Mỗi notebook cài `requirements-colab.txt`, cấu hình `API_BASE_URL`,
-`WORKER_TOKEN`, Supabase và sau đó chạy worker liên tục.
+Chạy `python ../collab/build_bundles.py` từ thư mục `gen` để tạo lại hai ZIP
+sau khi mã nguồn thay đổi. Colab cần truy cập được FastAPI qua URL HTTPS công
+khai trong thời gian demo. Notebook nhập `API_BASE_URL`, `WORKER_TOKEN` và cấu
+hình Supabase lúc chạy, sau đó worker polling liên tục để nhận job.
+
+Không commit các bundle ZIP. Xem hướng dẫn đầy đủ tại `../collab/README.md`.
 
 ## 9. Kiểm thử
 
@@ -193,6 +196,8 @@ Kiểm thử hiện tại bao phủ bước đầu cho:
 
 - đăng ký/đăng nhập;
 - repository job queue;
+- retry giới hạn và worker tiếp tục sau lỗi kết nối tạm thời;
+- đường dẫn PDF an toàn khi tải lên Supabase;
 - tool registry;
 - việc tách logic Docling khỏi notebook;
 - snapshot các file Python cũ trong `legacy_runtime`.
