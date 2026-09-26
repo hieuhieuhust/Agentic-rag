@@ -23,19 +23,41 @@ def render_chat(client: ApiClient, document_id: str | None) -> None:
     try:
         for message in client.messages(session_id):
             with st.chat_message(message["role"]):
+                if message.get("image_url"):
+                    st.image(message["image_url"], width=320)
                 st.markdown(message["content"])
     except httpx.HTTPError:
         st.warning("Không tải được lịch sử chat")
 
+    generation = st.session_state.get("chat_image_generation", 0)
+    uploaded_image = st.file_uploader(
+        "Đính kèm ảnh để tìm ảnh tương tự trong PDF (không bắt buộc)",
+        type=["jpg", "jpeg", "png", "webp"],
+        key=f"chat_image_{session_id}_{generation}",
+    )
     query = st.chat_input("Nhập câu hỏi")
     if not query:
         return
     with st.chat_message("user"):
+        if uploaded_image is not None:
+            st.image(uploaded_image, width=320)
         st.markdown(query)
     try:
+        image_url = None
+        if uploaded_image is not None:
+            uploaded = client.upload_chat_image(
+                uploaded_image.name,
+                uploaded_image.type,
+                uploaded_image.getvalue(),
+            )
+            image_url = uploaded["image_url"]
         request = client.send_message(
-            session_id, query, use_rag=document_id is not None
+            session_id,
+            query,
+            image_url=image_url,
+            use_rag=document_id is not None,
         )
+        st.session_state.chat_image_generation = generation + 1
         with st.chat_message("assistant"):
             placeholder = st.empty()
             for _ in range(180):

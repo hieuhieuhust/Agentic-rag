@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,10 +12,18 @@ from backend.database.models.message import Message
 from backend.database.models.processing_job import ProcessingJob
 from backend.database.models.rag_request import RagRequest
 from backend.database.models.user import User
+from backend.services.storage_service import StorageService
 from config.constants import JobType, Status
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
+
+MAX_CHAT_IMAGE_BYTES = 10 * 1024 * 1024
+CHAT_IMAGE_TYPES = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+}
 
 
 class SessionCreate(BaseModel):
@@ -27,6 +35,46 @@ class MessageCreate(BaseModel):
     content: str = Field(min_length=1)
     image_url: str | None = None
     use_rag: bool = True
+
+
+def valid_image_signature(content_type: str, data: bytes) -> bool:
+    if content_type == "image/jpeg":
+        return data.startswith(b"\xff\xd8\xff")
+    if content_type == "image/png":
+        return data.startswith(b"\x89PNG\r\n\x1a\n")
+    if content_type == "image/webp":
+        return len(data) >= 12 and data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+    return False
+
+
+@router.post("/images", status_code=201)
+def upload_chat_image(
+    file: UploadFile = File(),
+    user: User = Depends(get_current_user),
+):
+    content_type = file.content_type or ""
+    extension = CHAT_IMAGE_TYPES.get(content_type)
+    if extension is None:
+        raise HTTPException(
+            status_code=400, detail="Chỉ chấp nhận ảnh JPEG, PNG hoặc WebP"
+        )
+    data = file.file.read(MAX_CHAT_IMAGE_BYTES + 1)
+    if not data:
+        raise HTTPException(status_code=400, detail="File ảnh trống")
+    if len(data) > MAX_CHAT_IMAGE_BYTES:
+        raise HTTPException(status_code=413, detail="Ảnh không được vượt quá 10 MB")
+    if not valid_image_signature(content_type, data):
+        raise HTTPException(status_code=400, detail="Nội dung file ảnh không hợp lệ")
+
+    image_id = uuid.uuid4()
+    image_url = StorageService().upload_chat_image(
+        user.id,
+        image_id,
+        content_type,
+        extension,
+        data,
+    )
+    return {"id": str(image_id), "image_url": image_url}
 
 
 @router.post("/sessions", status_code=201)

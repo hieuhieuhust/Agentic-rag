@@ -60,6 +60,18 @@ class ApiClient:
         response.raise_for_status()
         return response.json()
 
+    def upload_chat_image(
+        self, name: str, content_type: str, data: bytes
+    ) -> dict[str, Any]:
+        response = httpx.post(
+            f"{self.base_url}/chat/images",
+            headers=self.headers,
+            files={"file": (name, data, content_type)},
+            timeout=120,
+        )
+        response.raise_for_status()
+        return response.json()
+
     def messages(self, session_id: str) -> list[dict]:
         response = httpx.get(
             f"{self.base_url}/chat/sessions/{session_id}/messages",
