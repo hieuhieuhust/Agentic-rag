@@ -62,10 +62,10 @@ class VectorStore:
         payload = chunk.copy()
         point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, payload["chunk_id"]))
         if collection == ChunkCollection.IMAGE:
-            vector = {
-                "embedding_caption": payload.pop("embedding_caption"),
-                "embedding_image": payload.pop("embedding_image"),
-            }
+            vector = {"embedding_caption": payload.pop("embedding_caption")}
+            image_vector = payload.pop("embedding_image", None)
+            if image_vector is not None:
+                vector["embedding_image"] = image_vector
         elif collection == ChunkCollection.TABLE:
             vector = {
                 "embedding_caption": payload.pop("embedding_caption"),

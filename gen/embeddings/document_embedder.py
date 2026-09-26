@@ -43,6 +43,8 @@ class DocumentEmbedder:
             chunk["embedding"] = self.bge.encode(text)
 
         notify(70, "Đang nhúng ảnh")
+        embedded_images = 0
+        skipped_images = 0
         for chunk in chunks.get("image_chunks", []):
             text = (
                 f"Thuộc phần: {chunk.get('heading_path', '')} \n "
@@ -52,14 +54,25 @@ class DocumentEmbedder:
             )
             chunk["embedding_caption"] = self.bge.encode(text)
             image_ref = chunk.get("image_ref", "")
+            if not image_ref.startswith(("http://", "https://")):
+                chunk["embedding_image_status"] = "missing_image_url"
+                skipped_images += 1
+                continue
             try:
-                chunk["embedding_image"] = (
-                    self.siglip.encode_url(image_ref)
-                    if image_ref.startswith("http")
-                    else [0.0] * SIGLIP_DIMENSION
-                )
+                image_vector = self.siglip.encode_url(image_ref)
+                if len(image_vector) != SIGLIP_DIMENSION or not any(image_vector):
+                    raise ValueError("Vector SigLIP không hợp lệ")
+                chunk["embedding_image"] = image_vector
+                chunk["embedding_image_status"] = "ready"
+                embedded_images += 1
             except Exception:
-                chunk["embedding_image"] = [0.0] * SIGLIP_DIMENSION
+                chunk["embedding_image_status"] = "failed"
+                skipped_images += 1
+
+        notify(
+            80,
+            f"Đã nhúng {embedded_images} ảnh; bỏ qua SigLIP cho {skipped_images} ảnh",
+        )
 
         notify(90, "Đang nhúng cấu trúc heading")
         for chunk in chunks.get("intro_chunks", []):
