@@ -5,8 +5,9 @@ thức. Mục tiêu là tách giao diện, API, dữ liệu, worker GPU và RAG 
 độc lập để dễ kiểm thử, thay model và phục vụ nhiều người dùng.
 
 > Trạng thái hiện tại: kiến trúc nền, xác thực, PostgreSQL, hàng đợi công việc,
-> worker Docling/embedding/index và các module RAG đã có. Luồng Agentic RAG nhiều
-> chặng của hệ thống cũ chưa được nối hoàn chỉnh end-to-end vào FastAPI.
+> worker Docling/embedding/index và luồng RAG nhiều tool cơ bản đã có. Các
+> bước đánh giá đủ dữ liệu, lọc kết quả, trích dẫn và vòng lặp
+> viết lại truy vấn của Agentic RAG chưa được nối hoàn chỉnh.
 
 ## 1. Luồng hệ thống dự kiến
 
@@ -33,8 +34,12 @@ thức. Mục tiêu là tách giao diện, API, dữ liệu, worker GPU và RAG 
    độ đầy đủ và có thể viết lại truy vấn trong số vòng lặp giới hạn.
 5. LLM tổng hợp câu trả lời; kết quả được lưu vào PostgreSQL và trả về UI.
 
-Bước 3–5 của luồng hỏi đáp hiện mới có các module thành phần, chưa có RAG worker
-hoàn chỉnh để vận hành toàn bộ chu trình.
+Bước 3–5 hiện đã có RAG worker phân rã câu hỏi và gọi nhiều tool
+trên sáu collection. Truy vấn ảnh bằng ảnh dùng SigLIP2 khi API nhận
+`image_url`; truy vấn text về ảnh dùng embedding caption. Streamlit đã có ô
+upload ảnh, FastAPI kiểm tra file và lưu ảnh truy vấn lên Supabase. Phần
+đánh giá kết quả và vòng lặp viết lại
+truy vấn vẫn chưa được nối.
 
 ## 2. Cấu trúc thư mục
 
@@ -58,7 +63,7 @@ gen/
 |   `-- state.py                   # trạng thái request
 |-- workers/
 |   |-- colab/                     # Docling và embedding worker dùng GPU
-|   `-- local/                     # worker ghi Qdrant
+|   `-- local/                     # worker Qdrant và RAG
 |-- notebooks/                     # notebook mỏng để khởi chạy worker trên Colab
 |-- infrastructure/                # client Supabase và Qdrant
 |-- models/                        # interface model API/finetuned
@@ -172,6 +177,15 @@ Khởi động worker ghi Qdrant ở một terminal riêng:
 python -m workers.local.database_worker
 ```
 
+Để thử luồng hỏi đáp nhiều tool, mở thêm một terminal:
+
+```powershell
+python -m workers.local.rag_worker
+```
+
+Nếu `OPENAI_API_KEY` chưa được cấu hình, câu hỏi gắn với PDF sẽ trả danh sách
+chunk truy xuất để kiểm tra. Câu hỏi chat không gắn PDF cần API LLM.
+
 ## 8. Chạy worker trên Colab
 
 Hai notebook đã dùng để kiểm thử nằm trong thư mục `../collab`:
@@ -199,6 +213,9 @@ Kiểm thử hiện tại bao phủ bước đầu cho:
 - retry giới hạn và worker tiếp tục sau lỗi kết nối tạm thời;
 - đường dẫn PDF an toàn khi tải lên Supabase;
 - tool registry;
+- router fallback cho text, ảnh, bảng, code và công thức;
+- bộ lọc `user_id` và `document_id` khi truy xuất Qdrant;
+- giữ metadata tool/collection khi gom kết quả;
 - việc tách logic Docling khỏi notebook;
 - snapshot các file Python cũ trong `legacy_runtime`.
 
@@ -217,12 +234,16 @@ rõ ràng.
 
 ## 11. Phần chưa hoàn thành
 
-- Chưa chuyển toàn bộ vòng xử lý của `legacy_runtime/tab_llm_worker.py` vào RAG
-  worker mới.
+- Đã nối phân tích, phân rã và chọn tool; chưa chuyển bước
+  sufficiency, result filter, context expansion và rewrite loop từ
+  `legacy_runtime/tab_llm_worker.py`.
 - Chưa lưu đầy đủ trạng thái vòng lặp, kết quả trung gian và chunk được chọn vào
   PostgreSQL.
-- Chưa nối end-to-end: câu hỏi → embedding → tool → Qdrant → kiểm tra đủ dữ
-  liệu → trả lời.
+- Luồng RAG nhiều tool cần được kiểm thử end-to-end trên từng
+  collection trước khi nối vòng lặp đánh giá và viết lại truy vấn.
+- Chưa tạo trích dẫn theo trang/chunk trong câu trả lời cuối.
+- Chưa gửi ảnh thật tới LLM vision; hiện chỉ dùng ảnh truy vấn cho
+  SigLIP2 và dùng caption/metadata để tổng hợp câu trả lời.
 - Agent Harness và MCP mới nằm trong kế hoạch, chưa được triển khai.
 - Chưa kiểm thử tải đồng thời nhiều người dùng trên hạ tầng thật.
 - Chưa triển khai WebSocket; UI hiện dùng polling để lấy trạng thái.

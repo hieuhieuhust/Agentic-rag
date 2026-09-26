@@ -27,13 +27,17 @@ Các phần đã có:
 - hàng đợi PostgreSQL có claim, lease, retry giới hạn và trạng thái tiến độ;
 - Docling tách text, image, table, formula, code và cấu trúc heading;
 - BGE-M3 và SigLIP2 tạo embedding trên Colab;
+- Streamlit cho phép đính kèm ảnh truy vấn; backend lưu ảnh trên Supabase
+  và dùng SigLIP2 để tìm ảnh tương tự trong PDF;
 - lưu vector và metadata vào Qdrant;
 - Streamlit gọi backend thông qua HTTP API;
 - tool registry và các stage nền cho Agentic RAG.
 
-Phần hỏi đáp mới **chưa hoàn thiện end-to-end**. FastAPI đã tạo được
-`rag_request`, nhưng còn cần nối query embedding, truy xuất Qdrant, Agent
-Harness/vòng lặp tool và bước tổng hợp câu trả lời vào RAG worker mới.
+Phần hỏi đáp mới đã nối được luồng RAG nhiều tool cơ bản: phân tích ý
+định, phân rã câu hỏi, chọn tool cho text, ảnh, bảng, công thức, code
+hoặc heading, tạo query embedding trên Colab, truy xuất Qdrant và tổng hợp
+kết quả. Luồng này cần được kiểm thử end-to-end; bước đánh giá đủ dữ
+liệu, lọc kết quả, trích dẫn và vòng lặp viết lại truy vấn chưa được nối.
 
 ## Kiến trúc demo
 
@@ -95,9 +99,10 @@ cần phát hành file dựng sẵn, nên đính kèm chúng vào GitHub Release
 ## Kế hoạch gần nhất
 
 1. Kiểm tra số lượng và metadata các vector đã ghi vào Qdrant.
-2. Thêm job tạo embedding cho câu hỏi.
-3. Kiểm thử truy xuất từng collection độc lập.
-4. Hoàn thiện RAG worker và chuyển vòng lặp từ `tab_llm_worker.py` cũ.
+2. Kiểm thử RAG nhiều tool với từng collection và PDF thật.
+3. Nối bước đánh giá đủ dữ liệu, lọc kết quả và vòng lặp viết lại truy vấn.
+4. Bổ sung trích dẫn theo trang/chunk và tùy chọn phân tích ảnh bằng
+   model vision khi chi phí cho phép.
 5. Kiểm thử hỏi đáp end-to-end, sau đó kiểm thử nhiều người dùng đồng thời.
 
 Thiết kế chi tiết và kế hoạch mở rộng Agent Harness/MCP nằm trong
